@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import {
   BriefcaseBusiness,
   Calculator,
@@ -33,7 +32,7 @@ export function AlieShell({
     <div className="site-frame">
       <header className="brand-row">
         <a className="brand" href={`${basePath}/`} aria-label="Alie home">
-          <Image
+          <img
             src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/alie-mark.svg`}
             alt=""
             width="48"
