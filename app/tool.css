@@ -417,6 +417,32 @@
   text-underline-offset: 2px;
 }
 
+.preview-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: -10px 0 -10px 5px;
+  padding: 0 4px;
+  color: var(--teal);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  font-size: inherit;
+  font-weight: 850;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.preview-more:hover {
+  color: var(--teal-dark);
+  background: var(--aqua-soft);
+}
+
+.preview-more:focus-visible {
+  outline: 3px solid rgba(64, 201, 181, 0.52);
+  outline-offset: 2px;
+}
+
 .post-actions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

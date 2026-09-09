@@ -59,6 +59,7 @@ export function LinkedInPostMaker() {
   const [historyPosition, setHistoryPosition] = useState(0);
   const [historyLength, setHistoryLength] = useState(1);
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop');
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
   const [copyTarget, setCopyTarget] = useState<CopyTarget | null>(null);
   const [feedback, setFeedback] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -76,13 +77,24 @@ export function LinkedInPostMaker() {
     };
   }, [text]);
 
-  const previewText = useMemo(() => {
-    if (!text) return 'Your post preview will appear here as you type.';
+  const preview = useMemo(() => {
+    if (!text) {
+      return {
+        canExpand: false,
+        text: 'Your post preview will appear here as you type.',
+      };
+    }
+
     const characters = Array.from(text);
-    return characters.length > 260
-      ? `${characters.slice(0, 260).join('')}… more`
-      : text;
-  }, [text]);
+    const canExpand = characters.length > 260;
+    return {
+      canExpand,
+      text:
+        canExpand && !isPreviewExpanded
+          ? characters.slice(0, 260).join('')
+          : text,
+    };
+  }, [isPreviewExpanded, text]);
 
   useLayoutEffect(() => {
     const selection = pendingSelectionRef.current;
@@ -133,6 +145,7 @@ export function LinkedInPostMaker() {
     };
     setCopyTarget(null);
     setFeedback('');
+    setIsPreviewExpanded(false);
     setText(nextText);
   }
 
@@ -171,6 +184,7 @@ export function LinkedInPostMaker() {
     };
     setCopyTarget(null);
     setFeedback(direction < 0 ? 'Last change undone.' : 'Change restored.');
+    setIsPreviewExpanded(false);
     setText(nextText);
   }
 
@@ -374,7 +388,19 @@ export function LinkedInPostMaker() {
                   <span>1h</span>
                 </div>
               </div>
-              <p className="post-copy">{previewText}</p>
+              <p className="post-copy" aria-live="polite">
+                {preview.text}
+                {preview.canExpand && (
+                  <button
+                    className="preview-more"
+                    type="button"
+                    aria-expanded={isPreviewExpanded}
+                    onClick={() => setIsPreviewExpanded((expanded) => !expanded)}
+                  >
+                    {isPreviewExpanded ? 'Show less' : '… more'}
+                  </button>
+                )}
+              </p>
               <div className="post-actions" aria-label="Example post actions">
                 <span>
                   <ThumbsUp aria-hidden="true" /> Like
