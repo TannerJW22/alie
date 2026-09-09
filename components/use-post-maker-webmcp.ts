@@ -56,7 +56,9 @@ export function usePostMakerWebMcp(
     if (!context?.registerTool) return;
 
     const lifecycle = new AbortController();
-    const supportedStyles = STYLE_DEFINITIONS.map(({ id }) => id);
+    const supportedStyles = STYLE_DEFINITIONS.filter(
+      ({ availability }) => availability !== 'disabled',
+    ).map(({ id }) => id);
 
     const commitText = async (nextText: string) => {
       textRef.current = nextText;

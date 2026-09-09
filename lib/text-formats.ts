@@ -17,11 +17,19 @@ export type StyleId =
   | 'uppercase'
   | 'lowercase';
 
+export type StyleAvailability = 'available' | 'experimental' | 'disabled';
+
 type StyleDefinition = {
   id: StyleId;
   label: string;
   description: string;
+  availability?: StyleAvailability;
+  unavailableReason?: string;
 };
+
+export const UNDERLINE_EXPERIMENT_STATE: StyleAvailability = 'experimental';
+export const UNDERLINE_UNAVAILABLE_REASON =
+  'LinkedIn does not reliably preserve connected underlining across fonts and devices.';
 
 type LineFormatId =
   | 'bullets'
@@ -76,8 +84,11 @@ export const STYLE_DEFINITIONS: readonly StyleDefinition[] = [
   },
   {
     id: 'underline',
-    label: 'Underline',
-    description: 'Add an underline to each text character.',
+    label: 'Underline (Experimental)',
+    description:
+      'Best-effort connected underline. Test it in LinkedIn before publishing.',
+    availability: UNDERLINE_EXPERIMENT_STATE,
+    unavailableReason: UNDERLINE_UNAVAILABLE_REASON,
   },
   {
     id: 'strikethrough',
@@ -86,8 +97,11 @@ export const STYLE_DEFINITIONS: readonly StyleDefinition[] = [
   },
   {
     id: 'boldUnderline',
-    label: 'Bold Underline',
-    description: 'Use bold characters with an underline.',
+    label: 'Bold Underline (Experimental)',
+    description:
+      'Best-effort bold underline. Test it in LinkedIn before publishing.',
+    availability: UNDERLINE_EXPERIMENT_STATE,
+    unavailableReason: UNDERLINE_UNAVAILABLE_REASON,
   },
   {
     id: 'boldStrikethrough',
@@ -221,7 +235,7 @@ function mapAlphanumeric(text: string, style: AlphanumericStyle): string {
 
 function decorateGraphemes(text: string, mark: string): string {
   return Array.from(graphemeSegmenter.segment(text), ({ segment }) =>
-    segment.includes('\n') || segment.includes('\r')
+    segment.includes(mark) || /[\r\n\t\u2028\u2029]/u.test(segment)
       ? segment
       : `${segment}${mark}`,
   ).join('');

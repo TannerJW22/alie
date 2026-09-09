@@ -6,7 +6,12 @@ import { describe, test } from 'node:test';
 // @ts-expect-error Node's type-stripping runner requires the explicit TypeScript extension.
 import * as textFormats from './text-formats.ts';
 
-const { STYLE_DEFINITIONS, applyLineFormat, applyTextStyle } = textFormats;
+const {
+  STYLE_DEFINITIONS,
+  UNDERLINE_EXPERIMENT_STATE,
+  applyLineFormat,
+  applyTextStyle,
+} = textFormats;
 type StyleId = (typeof STYLE_DEFINITIONS)[number]['id'];
 
 void describe('STYLE_DEFINITIONS', () => {
@@ -39,6 +44,21 @@ void describe('STYLE_DEFINITIONS', () => {
       STYLE_DEFINITIONS.every(({ label, description }) => label && description),
     );
   });
+
+  void test('keeps both underline styles on one reversible experiment state', () => {
+    const underlineStyles = STYLE_DEFINITIONS.filter(({ id }) =>
+      ['underline', 'boldUnderline'].includes(id),
+    );
+
+    assert.equal(UNDERLINE_EXPERIMENT_STATE, 'experimental');
+    assert.equal(underlineStyles.length, 2);
+    assert.ok(
+      underlineStyles.every(
+        ({ availability, unavailableReason }) =>
+          availability === UNDERLINE_EXPERIMENT_STATE && unavailableReason,
+      ),
+    );
+  });
 });
 
 void describe('applyTextStyle', () => {
@@ -68,6 +88,16 @@ void describe('applyTextStyle', () => {
     assert.equal(applyTextStyle('A\n1', 'boldUnderline'), '𝐀̲\n𝟏̲');
     assert.equal(applyTextStyle('A1', 'boldStrikethrough'), '𝐀̶𝟏̶');
     assert.equal(applyTextStyle('e\u0301', 'underline'), 'e\u0301\u0332');
+    assert.equal(applyTextStyle('A 1', 'underline'), 'A̲ ̲1̲');
+    assert.equal(applyTextStyle('A\t1', 'underline'), 'A̲\t1̲');
+  });
+
+  void test('does not stack the same combining line on repeated formatting', () => {
+    const underlined = applyTextStyle('Alie tools', 'underline');
+    const struck = applyTextStyle('Alie tools', 'strikethrough');
+
+    assert.equal(applyTextStyle(underlined, 'underline'), underlined);
+    assert.equal(applyTextStyle(struck, 'strikethrough'), struck);
   });
 
   void test('changes case with native Unicode-aware casing', () => {

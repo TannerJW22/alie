@@ -5,7 +5,7 @@ Alie is a friendly, free professional-tool hub. This MVP includes the first comp
 ## Included
 
 - Branded multi-page home and Writing & Social navigation
-- Selective bold, italic, underline, and strikethrough formatting
+- Selective bold, italic, experimental underline, and strikethrough formatting
 - Bulleted, numbered, checklist, shortest-first, and longest-first line tools
 - Seventeen copyable Unicode text styles
 - Undo, redo, clear, live counts, responsive preview, and clipboard copy

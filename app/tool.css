@@ -166,6 +166,28 @@
   border-color: var(--teal);
 }
 
+.format-availability {
+  margin: 0;
+  padding: 10px 22px;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.format-availability.is-experimental {
+  background: var(--aqua-soft);
+}
+
+.format-availability.is-disabled {
+  background: #f0f2f1;
+}
+
+.format-availability strong {
+  color: var(--ink);
+}
+
 .format-button:disabled,
 .device-button:disabled,
 .copy-button:disabled,

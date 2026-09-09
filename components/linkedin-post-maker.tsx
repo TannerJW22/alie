@@ -26,8 +26,11 @@ import {
 } from 'lucide-react';
 import {
   STYLE_DEFINITIONS,
+  UNDERLINE_EXPERIMENT_STATE,
+  UNDERLINE_UNAVAILABLE_REASON,
   applyLineFormat,
   applyTextStyle,
+  type StyleAvailability,
   type StyleId,
 } from '@/lib/text-formats';
 import { usePostMakerWebMcp } from '@/components/use-post-maker-webmcp';
@@ -36,10 +39,16 @@ const selectionFormats: ReadonlyArray<{
   id: StyleId;
   label: string;
   icon: typeof Bold;
+  availability?: StyleAvailability;
 }> = [
   { id: 'bold', label: 'Bold', icon: Bold },
   { id: 'italic', label: 'Italic', icon: Italic },
-  { id: 'underline', label: 'Underline', icon: Underline },
+  {
+    id: 'underline',
+    label: 'Underline',
+    icon: Underline,
+    availability: UNDERLINE_EXPERIMENT_STATE,
+  },
   { id: 'strikethrough', label: 'Strikethrough', icon: Strikethrough },
 ];
 
@@ -273,20 +282,48 @@ export function LinkedInPostMaker() {
             role="toolbar"
             aria-label="Format selected text"
           >
-            {selectionFormats.map(({ id, label, icon: Icon }) => (
-              <button
-                className="format-button"
-                type="button"
-                key={id}
-                aria-label={`Apply ${label.toLowerCase()} to selected text`}
-                title={`Apply ${label.toLowerCase()} to selected text`}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => applySelectionFormat(id)}
-              >
-                <Icon aria-hidden="true" /> {label}
-              </button>
-            ))}
+            {selectionFormats.map(({ id, label, icon: Icon, availability }) => {
+              const isUnavailable = availability === 'disabled';
+              const visibleLabel =
+                availability === 'experimental' ? `${label} · Beta` : label;
+
+              return (
+                <button
+                  className="format-button"
+                  type="button"
+                  key={id}
+                  aria-label={`Apply ${visibleLabel.toLowerCase()} to selected text`}
+                  aria-describedby={
+                    id === 'underline' ? 'underline-availability' : undefined
+                  }
+                  title={`Apply ${visibleLabel.toLowerCase()} to selected text`}
+                  disabled={isUnavailable}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => applySelectionFormat(id)}
+                >
+                  <Icon aria-hidden="true" /> {visibleLabel}
+                </button>
+              );
+            })}
           </div>
+
+          <p
+            className={`format-availability${
+              UNDERLINE_EXPERIMENT_STATE === 'disabled'
+                ? ' is-disabled'
+                : ' is-experimental'
+            }`}
+            id="underline-availability"
+          >
+            <strong>
+              {UNDERLINE_EXPERIMENT_STATE === 'disabled'
+                ? 'Underline unavailable.'
+                : 'Underline experiment.'}
+            </strong>{' '}
+            {UNDERLINE_EXPERIMENT_STATE === 'disabled'
+              ? UNDERLINE_UNAVAILABLE_REASON
+              : 'Alie uses Unicode’s connecting low line. Paste a short sample into a LinkedIn draft and check it on the device you publish from.'}
+          </p>
 
           <div
             className="editor-toolbar"
@@ -446,6 +483,7 @@ export function LinkedInPostMaker() {
             const styledPost = applyTextStyle(text, style.id);
             const sample = applyTextStyle('Aa', style.id);
             const wasCopied = copyTarget === style.id;
+            const isUnavailable = style.availability === 'disabled';
 
             return (
               <button
@@ -453,10 +491,13 @@ export function LinkedInPostMaker() {
                 type="button"
                 key={style.id}
                 aria-label={`Copy your post in ${style.label.toLowerCase()} style`}
+                aria-describedby={
+                  style.availability ? 'underline-availability' : undefined
+                }
                 onClick={() =>
                   copyText(styledPost, style.id, `${style.label} post`)
                 }
-                disabled={!text}
+                disabled={!text || isUnavailable}
               >
                 <span className="style-sample" aria-hidden="true">
                   {sample}
