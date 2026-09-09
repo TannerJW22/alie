@@ -54,6 +54,14 @@ const lineFormats = [
 type PreviewDevice = 'desktop' | 'mobile';
 type CopyTarget = 'post' | StyleId;
 
+const graphemeSegmenter = new Intl.Segmenter(undefined, {
+  granularity: 'grapheme',
+});
+
+function segmentGraphemes(value: string): string[] {
+  return Array.from(graphemeSegmenter.segment(value), ({ segment }) => segment);
+}
+
 export function LinkedInPostMaker() {
   const [text, setText] = useState('');
   const [historyPosition, setHistoryPosition] = useState(0);
@@ -72,7 +80,7 @@ export function LinkedInPostMaker() {
   const counts = useMemo(() => {
     const trimmed = text.trim();
     return {
-      characters: Array.from(text).length,
+      characters: segmentGraphemes(text).length,
       words: trimmed ? trimmed.split(/\s+/u).length : 0,
     };
   }, [text]);
@@ -85,7 +93,7 @@ export function LinkedInPostMaker() {
       };
     }
 
-    const characters = Array.from(text);
+    const characters = segmentGraphemes(text);
     const canExpand = characters.length > 260;
     return {
       canExpand,
@@ -388,12 +396,13 @@ export function LinkedInPostMaker() {
                   <span>1h</span>
                 </div>
               </div>
-              <p className="post-copy" aria-live="polite">
-                {preview.text}
+              <p className="post-copy">
+                <span id="post-preview-copy">{preview.text}</span>
                 {preview.canExpand && (
                   <button
                     className="preview-more"
                     type="button"
+                    aria-controls="post-preview-copy"
                     aria-expanded={isPreviewExpanded}
                     onClick={() => setIsPreviewExpanded((expanded) => !expanded)}
                   >
